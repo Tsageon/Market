@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Bars } from "react-loader-spinner";
-import ProtectedRoute from './Components/ProtectedRoutes';
+import { useDispatch } from 'react-redux';
+import { setUser } from './Redux/authSlice';
 import Login from './Components/Login';
 import Profile from './Components/Profile';
 import Register from './Components/Register';
@@ -14,6 +15,14 @@ import Admin from './Components/Admin';
 
 function App() {
   const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('User');
+    if (storedUser) {
+      dispatch(setUser(JSON.parse(storedUser)));
+    }
+  }, [dispatch]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -31,6 +40,7 @@ function App() {
     );
   }
 
+  
   return (
 
     <Router>

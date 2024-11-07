@@ -2,6 +2,11 @@
   text-align: center;
 }
 
+.loader-spinner{
+position: absolute;
+top: 50%;
+right: 50%;
+}
 .App-logo {
   height: 40vmin;
   pointer-events: none;

@@ -1,35 +1,39 @@
 import React, { useState, useEffect,useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchItems } from "../Redux/itemSlice";
+import { selectUser } from "../Redux/authSlice";
+import { addToCart } from "../Redux/cartSlice";
+import { Bars } from "react-loader-spinner";
 import Img from "./pHilMckacking (1).png";
+import { FaCartPlus } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import './Home.css'
 
-const Home = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState("all");
-  const [showPriceSlider, setShowPriceSlider] = useState(false);
-  const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(1000);
+const Home = (item) => {
   const productSectionRef = useRef(null);
+  const user = useSelector(selectUser);
   const items = useSelector((state) => state.items.items);
   const status = useSelector((state) => state.items.status);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [cartItems, setCartItems] = useState([]);
+  const [selectedFilter, setSelectedFilter] = useState("all");
+  const [showPriceSlider, setShowPriceSlider] = useState(false);
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(1000);
 
+  console.log('User:', user);
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
 
   const handleSearchClick = () => {
-    const results = items.filter(
-      (recipe) => recipe.Name.toLowerCase().includes(searchQuery.toLowerCase()) 
-    );
-    if (results.length === 0) {
+    if (filteredItems.length === 0) {
       alert("Product Not Found/Added Yet.");
     }
   };
-
+  
   const handleExploreClick = () => {
     if (productSectionRef.current) {
       productSectionRef.current.scrollIntoView({
@@ -54,10 +58,34 @@ const Home = () => {
   };
 
   const handleProfileClick = () => {
-    navigate("/profile");
+    if (!user?.email) {
+      console.log('User from Redux store:', user);  
+      alert("Please log in to see your profile.");
+      navigate("/");
+    } else {
+      navigate("/profile",);
+    }
   };
+  
+  const handleAddToCart = () => {
+    console.log("Add to cart clicked!");
+    if (item && item.Name && item.Price && item.Description) {
+      console.log('Item being added:', item);
+      dispatch(addToCart({
+        id: item.id, 
+        name: item.Name,
+        description: item.Description,
+        price: item.Price,
+        quantity: 1
+      }));
+    } else {
+      console.log('Item data is incomplete or invalid');
+    }
+  };
+  
+  
 
-  const handleCart = () => {
+  const handleGoToCart = () => {
     navigate("/cart");
   };
 
@@ -108,14 +136,22 @@ const Home = () => {
   };
 
   const handleBuyNow = (item) => {
-    navigate("/product", { state: { item } });
+    if (!user) {
+      alert("Please log in to buy your headphones.");
+      navigate("/login");
+    } else {
+      navigate("/product", { state: { item } });
+    }
   };
+  
 
   useEffect(() => {
     if (status === "idle") {
       dispatch(fetchItems());
     }
   }, [status, dispatch]);
+
+  console.log('User:', user);
 
   return (
     <div className="Home-container">
@@ -143,8 +179,8 @@ const Home = () => {
           </button>
         </div>
         <div className="account-cart">
-          <button className="cart" onClick={handleCart}>
-            Cart
+          <button className="cart" onClick={handleGoToCart}>
+          ({cartItems.length} items)in Cart
           </button>
           <button className="profile" onClick={handleProfileClick}>
             Profile
@@ -186,14 +222,17 @@ const Home = () => {
 
       <div className="Products-section">
         <h2>Items</h2>
-        {status === "loading" ? <p>Loading...</p> : null}
+        <p>Welcome, {user?.user?.email || "Guest"}</p>
+        {status === "loading" ? <Bars  height="80" width="80" color="#4fa94d" ariaLabel="loading-indicator" /> : null}
         <div id="product-section" className="Products-section">
           <h3>
             <b>Products for You</b>
           </h3>
           <br />
           {status === "loading" ? (
-            <p>Loading...</p>
+             <div className="loader-container">
+             <Bars height="80" width="80" color="#4fa94d" ariaLabel="loading-indicator" />
+           </div>
           ) : (
             <div className="product-card-container">
               {filteredItems.map((item) => (
@@ -210,6 +249,7 @@ const Home = () => {
                   >
                     Buy
                   </button>
+                  <button className="buy-button"  onClick={ handleAddToCart}><FaCartPlus/>Add to Cart</button>
                 </div>
               ))}
             </div>

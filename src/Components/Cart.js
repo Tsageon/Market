@@ -32,7 +32,7 @@ const Cart = () => {
             </div>
           ))}
           <h3>Total Price: R{calculateTotalPrice()}</h3>
-          <button onClick={handleCheckout}>Proceed to Product Summary</button>
+          <button onClick={handleCheckout}>Proceed to Pay?</button>
         </>
       )}
     </div>
